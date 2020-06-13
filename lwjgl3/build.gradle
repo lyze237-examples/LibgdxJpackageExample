@@ -1,4 +1,16 @@
+buildscript {
+	repositories {
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
+	}
+	dependencies {
+		classpath "org.beryx:badass-runtime-plugin:1.8.5" // plugin dependencies
+	}
+}
+
 apply plugin: 'application'
+apply plugin: 'org.beryx.runtime'
 
 sourceSets.main.resources.srcDirs += [ rootProject.file('assets').path ]
 mainClassName = 'dev.lyze.gdxJpackage.lwjgl3.Lwjgl3Launcher'
@@ -23,9 +35,50 @@ run {
 	}
 }
 jar {
+	// gdx sets it up by default in build/libs, jpackage requires the jar to be in build/lib, therefore we need to change that
+	destinationDirectory = file("$buildDir/lib")
 	archiveFileName = "${appName}-${archiveVersion.get()}.jar"
 	from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } } 
 	manifest {
 		attributes 'Main-Class': project.mainClassName
 	}
 }
+
+
+jpackageImage.dependsOn jar
+
+runtime {
+	// jlink options
+	options = ['--strip-debug',
+			   '--compress', '2',
+			   '--no-header-files',
+			   '--no-man-pages',
+			   '--strip-native-commands',
+			   '--vm', 'server']
+	// modules the jre should have
+	modules = ['java.base' ,
+			   'java.desktop',
+			   'jdk.unsupported']
+
+	jpackage {
+		// change those
+		installerOptions += [ '--vendor', 'NAME', '--description', 'SHORT DESCRIPTION' ]
+		mainJar = jar.archiveFileName.get()
+		installerName = imageName = appName // set installer and filename to the project name
+
+		if (OperatingSystem.current().windows) {
+			imageOptions += [ '--win-console' ] // shows windows console
+			//imageOptions += [ "--icon", file("../assets/icons/Icon.ico") ] // windows requires .ico files as icon
+			// win per user install: installs the app to locallow instead of program files, therefore doesn't require admin rights to install
+			// win dir chooser: allows the user to change the install directory
+			// win menu: sets up a menu entry
+			// win shortcut: desktop shortcut
+			// win upgrade uuid: CHANGE THAT to a valid uuid, allows the installer to upgrade the program by installing a new version of the program
+			installerOptions += ['--win-per-user-install', '--win-dir-chooser', '--win-menu', '--win-shortcut', '--win-upgrade-uuid', '4d142b9c-e341-4621-b23e-cc0d642944a0']
+		} else {
+			//imageOptions += ["--icon", file("../assets/icons/Icon-32.png")]
+			installerOptions += ['--linux-menu-group', '--linux-shortcut']
+		}
+	}
+}
+
