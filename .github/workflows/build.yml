@@ -32,21 +32,21 @@ jobs:
 
 
       - name: Upload jar artifact
-          uses: actions/upload-artifact@v2
-          with:
-            name: GdxJpackage-linux.jar
-            path: GdxJpackage-linux.jar
+        uses: actions/upload-artifact@v2
+        with:
+          name: GdxJpackage-linux.jar
+          path: GdxJpackage-linux.jar
 
       - name: Upload deb artifact
-          uses: actions/upload-artifact@v2
-          with:
-            name: GdxJpackage.deb
-            path: GdxJpackage.deb
+        uses: actions/upload-artifact@v2
+        with:
+          name: GdxJpackage.deb
+          path: GdxJpackage.deb
       - name: Upload rmp artifact
-          uses: actions/upload-artifact@v2
-          with:
-            name: GdxJpackage.rpm
-            path: GdxJpackage.rpm
+        uses: actions/upload-artifact@v2
+        with:
+          name: GdxJpackage.rpm
+          path: GdxJpackage.rpm
 
 
 
